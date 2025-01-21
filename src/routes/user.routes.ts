@@ -1,16 +1,25 @@
 import express from "express";
-import { createNewUser, deleteUser, getAllUsers, updateUser } from "../controllers/users.controller.js";
+import { createNewUser, deleteUser, getAllUsers, updateUser, verifyUsername } from "../controllers/users.controller.js";
 import { authenticateToken } from "../middlewares/userAuthentication.js";
-import { singleUplaod } from "../middlewares/multer.js";
+import { singleUpload } from "../middlewares/multer.js";
+import { adminVerification } from "../middlewares/adminOnly.js";
 
 const app = express.Router();
 
-app.post('/createUser', singleUplaod, createNewUser);
+app.post('/createUser', singleUpload, createNewUser);
+app.get('/username-available/:username', verifyUsername);
 
+
+/**
+ * Logged in users only
+ */
 app.use(authenticateToken);
-
-app.patch('/update', singleUplaod, updateUser);
+app.patch('/update', singleUpload, updateUser);
 app.delete('/delete', deleteUser);
-app.get('/getAll', getAllUsers);
+
+/**
+ * Admin only routes
+ */
+app.get('/getall', adminVerification, getAllUsers);
 
 export default app;

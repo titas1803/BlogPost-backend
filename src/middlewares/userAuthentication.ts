@@ -36,7 +36,6 @@ export const authenticateToken = async (req: ICustomRequest, _res: Response, nex
       next();
     });
   } catch (err) {
-    console.log(err);
     next(err); // Pass error to the global error handler
   }
 };

@@ -3,6 +3,8 @@ import validator from "validator";
 import { IUser } from "../utilities/types.js";
 import Login from "./login.model.js";
 import ErrorHandler from "../utilities/Error.class.js";
+import Posts from "./posts.model.js";
+import { renameSync } from "fs";
 
 export const userSchema = new mongoose.Schema({
   name: {
@@ -63,8 +65,20 @@ userSchema.post('save', async function (doc, next) {
 
     const loginDetails = new Login({ userId: doc._id, password: user.password ?? 'Demo@123' });
     await loginDetails.save();
+
+    /**
+     * Update the upload location name if username changes
+     */
+    const oldFolderPath = `uploads/[userId]`
+    const newFolderPath = `uploads/${doc._id.toString()}`
+    renameSync(oldFolderPath, newFolderPath);
+
+    await Users.findByIdAndUpdate(doc._id, {
+      $set: {
+        photo: doc.photo.replace('[userId]', doc._id.toString())
+      }
+    });
   } catch (error) {
-    console.log(error);
     // If loginDetails creation fails, delete the user document
     await this.model('Users').deleteOne({ _id: doc._id });
     throw new ErrorHandler("Internal error");
@@ -74,8 +88,11 @@ userSchema.post('save', async function (doc, next) {
 userSchema.pre('findOneAndDelete', async function (next) {
   try {
     console.log(this.getQuery()._id)
-    const deletedLogin = await Login.deleteOne({ userId: this.getQuery()._id });
+    const userId = this.getQuery()._id;
+    const deletedLogin = await Login.deleteOne({ userId });
     if (!deletedLogin) throw new ErrorHandler("Unable to delete user");
+    const deletedPosts = await Posts.deleteMany({ authorId: userId });
+    if (!deletedPosts.acknowledged) throw new ErrorHandler("Unable to delete user's posts");
     next();
   } catch (error) {
     next(error as CallbackError);

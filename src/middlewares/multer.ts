@@ -2,16 +2,14 @@ import multer from "multer";
 import { v4 } from "uuid";
 import fs from "fs"
 import { ICustomRequest } from "../utilities/types.js";
-import Users from "../models/users.model.js";
 
 const storage = multer.diskStorage({
   async destination(req: ICustomRequest, _file, callback) {
-    let userName = req.body['userName'];
+    let folderName = '[userId]';
     if (req.user) {
-      const user = await Users.findById({ _id: req.user?.userId });
-      userName = user?.userName ?? userName;
+      folderName = req.user.userId;
     }
-    const filePath = `uploads/${userName}`;
+    const filePath = `uploads/${folderName}`;
     fs.mkdirSync(filePath, { recursive: true });
     callback(null, filePath);
   },
@@ -22,4 +20,5 @@ const storage = multer.diskStorage({
   },
 });
 
-export const singleUplaod = multer({ storage }).single('photo');
+export const singleUpload = multer({ storage }).single('photo');
+export const multiUpload = multer({ storage }).array('images');

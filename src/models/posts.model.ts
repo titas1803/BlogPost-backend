@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { IPost } from "../utilities/types.js";
+import Comments from "./comments.model.js";
 
 const postSchema = new mongoose.Schema({
   title: {
@@ -14,6 +15,7 @@ const postSchema = new mongoose.Schema({
   },
   authorId: {
     type: mongoose.Schema.Types.ObjectId,
+    required: true,
     ref: "Users",
   },
   tags: {
@@ -28,13 +30,31 @@ const postSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-  likes: Number,
+  likedBy: {
+    type: [String],
+    default: []
+  },
   isPublished: {
     type: Boolean,
     default: true,
   }
 }, {
   timestamps: true
+});
+
+/**
+ * Virtual columns
+ */
+postSchema.virtual('likes').get(function () {
+  return this.likedBy.length;
+});
+
+postSchema.virtual('commentsCount').get(async function () {
+  const comments = await Comments.find({ postId: this._id });
+  if (comments) {
+    return comments.length;
+  }
+  return 0;
 });
 
 const Posts = mongoose.model<IPost>('posts', postSchema);

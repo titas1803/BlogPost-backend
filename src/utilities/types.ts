@@ -42,11 +42,13 @@ export interface IPost extends Document {
   tags: string[], // List of tags (e.g., "tech", "lifestyle")
   categories: string[], // Categorization for the blog
   coverImage: string, // URL to cover image
-  likes: number,
-  commentsCount: number,
+  likedBy: string[],
   isPublished: boolean,
   createdAt: Date,
   updatedAt: Date
+  //virtual attribute
+  likes: number,
+  commentsCount: number,
 }
 
 export interface IComment extends Document {
