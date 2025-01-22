@@ -1,3 +1,5 @@
+#README.md
+
 # BlogPost Backend
 
 This is the backend for the BlogPost application, built using Node.js, Express, and MongoDB. It provides APIs for user authentication, blog post management, and comment handling.
@@ -103,8 +105,13 @@ This is the backend for the BlogPost application, built using Node.js, Express, 
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions are welcome! Please provide suggestions about how can I improve this project.
 
 ## License
 
 This project is licensed under the ISC License.
+
+## 🚀 About Me
+
+I'm a Frontend React developer, with 3+ years of experience. Currently In process of becoming a full stack developer...
+This is my first project on `node`, `EXPRESS` and `MONGODB`. Please excuse my mistakes.

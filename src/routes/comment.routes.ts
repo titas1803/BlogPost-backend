@@ -7,8 +7,8 @@ const app = express.Router();
 app.use(authenticateToken);
 
 app.post("/add", addComment);
-
 app.post("/seeAllComments", getAllCommentsOfAPost);
+
 
 app.route("/:id").delete(deleteComment).patch(updateComment);
 app.put("/:id/like", likeAComment);

@@ -5,6 +5,8 @@ import Login from "./login.model.js";
 import ErrorHandler from "../utilities/Error.class.js";
 import Posts from "./posts.model.js";
 import { renameSync } from "fs";
+import Comments from "./comments.model.js";
+import Subscribers from "./subscribers.model.js";
 
 export const userSchema = new mongoose.Schema({
   name: {
@@ -55,6 +57,13 @@ export const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+userSchema.virtual("noOfSubscribers").get(
+  async function () {
+    const subscribersLength = await Subscribers.findOne({ authorId: this._id }, "subscribedBy").then(subs => subs?.subscribedBy.length);
+    return subscribersLength;
+  }
+);
+
 userSchema.post('save', async function (doc, next) {
   try {
     const user = this as mongoose.Document & { password?: string };
@@ -65,6 +74,7 @@ userSchema.post('save', async function (doc, next) {
 
     const loginDetails = new Login({ userId: doc._id, password: user.password ?? 'Demo@123' });
     await loginDetails.save();
+    const subScriberDetails = new Subscribers({ authorId: doc._id });
 
     /**
      * Update the upload location name if username changes
@@ -87,10 +97,16 @@ userSchema.post('save', async function (doc, next) {
 
 userSchema.pre('findOneAndDelete', async function (next) {
   try {
-    console.log(this.getQuery()._id)
     const userId = this.getQuery()._id;
+    const deletedSubscriber = await Subscribers.deleteOne({ authorId: userId });
+    if (!deletedSubscriber.acknowledged) throw new ErrorHandler("Unable to delete subscribers details");
     const deletedLogin = await Login.deleteOne({ userId });
-    if (!deletedLogin) throw new ErrorHandler("Unable to delete user");
+    if (!deletedLogin.acknowledged) throw new ErrorHandler("Unable to delete user");
+    const postIds = await Posts.find({ authorId: userId }).then((posts) => posts.map((post) => post._id));
+    const deletedCommentsByUserId = await Comments.deleteMany({ authorId: userId });
+    if (!deletedCommentsByUserId.acknowledged) throw new ErrorHandler("Unable to delete user's Comments");
+    const deletedCommentsFromPosts = await Comments.deleteMany({ postId: { $in: postIds } });
+    if (!deletedCommentsFromPosts.acknowledged) throw new ErrorHandler("Unable to delete Comments from user's post");
     const deletedPosts = await Posts.deleteMany({ authorId: userId });
     if (!deletedPosts.acknowledged) throw new ErrorHandler("Unable to delete user's posts");
     next();

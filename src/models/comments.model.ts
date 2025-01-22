@@ -7,7 +7,7 @@ const commentSchema = new mongoose.Schema({
     required: true,
     ref: "Posts"
   },
-  userId: {
+  authorId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "Users"
@@ -16,9 +16,16 @@ const commentSchema = new mongoose.Schema({
     type: String,
     requried: true,
   },
-  likes: Number
+  likedBy: {
+    type: [String],
+    default: []
+  }
 }, {
   timestamps: true
+});
+
+commentSchema.virtual('likes').get(function () {
+  return this.likedBy.length;
 });
 
 const Comments = mongoose.model<IComment>("comments", commentSchema);

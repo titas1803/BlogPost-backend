@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { CallbackError } from "mongoose";
 import { IPost } from "../utilities/types.js";
 import Comments from "./comments.model.js";
+import ErrorHandler from "../utilities/Error.class.js";
 
 const postSchema = new mongoose.Schema({
   title: {
@@ -55,6 +56,17 @@ postSchema.virtual('commentsCount').get(async function () {
     return comments.length;
   }
   return 0;
+});
+
+postSchema.pre('findOneAndDelete', async function (next) {
+  try {
+    const postId = this.getQuery()._id;
+    const deletedComments = await Comments.deleteMany({ postId });
+    if (!deletedComments.acknowledged) throw new ErrorHandler("Unable to delete user's posts");
+    next();
+  } catch (error) {
+    next(error as CallbackError);
+  }
 });
 
 const Posts = mongoose.model<IPost>('posts', postSchema);

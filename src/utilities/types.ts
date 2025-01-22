@@ -11,9 +11,11 @@ export interface IUser extends Document {
   role: 'ADMIN' | 'USER';
   gender: 'male' | 'female';
   dob: Date;
-  password: string
+  password: string;
   createdAt: Date;
   updatedAt: Date;
+  // Virtual attribute
+  noOfSubscribers: number
 }
 
 export interface INewUserReq {
@@ -54,11 +56,19 @@ export interface IPost extends Document {
 export interface IComment extends Document {
   _id: ObjectId,
   postId: ObjectId, // References the Posts collection
-  userId: ObjectId, // References the Users collection
+  authorId: ObjectId, // References the Users collection
   commentText: string,
-  likes: number,
+  likedBy: string[],
   createdAt: Date,
   updatedAt: Date
+  // virtual attribute
+  likes: number,
+}
+
+export interface ISubscriber extends Document {
+  _id: ObjectId;
+  authorId: ObjectId;
+  subscribedBy: string[];
 }
 
 export interface ILoginReq {

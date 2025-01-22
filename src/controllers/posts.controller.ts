@@ -96,6 +96,7 @@ export const likeAPost = async (req: ICustomRequest, res: Response, next: NextFu
     if (!post)
       throw new ErrorHandler("post might not be available", 404);
     const likedPost = await post.updateOne({ $addToSet: { likedBy: req.user?.userId } });
+    if (!likedPost.acknowledged) throw new ErrorHandler();
     res.status(200).json(successJSON("post liked successfuly"));
   } catch (error) {
     next(error)
