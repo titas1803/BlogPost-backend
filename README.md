@@ -1,8 +1,8 @@
-#README.md
+# README.md
 
 # BlogPost Backend
 
-This is the backend for the BlogPost application, built using Node.js, Express, and MongoDB. It provides APIs for user authentication, blog post management, and comment handling.
+This is the backend for the BlogPost application, built using Node.js, Express, and MongoDB. It provides APIs for user authentication, blog post management, comments, and subscriptions.
 
 ## Table of Contents
 
@@ -11,6 +11,7 @@ This is the backend for the BlogPost application, built using Node.js, Express, 
 - [API Endpoints](#api-endpoints)
 - [Environment Variables](#environment-variables)
 - [Scripts](#scripts)
+- [Folder Structure](#folder-structure)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -29,71 +30,72 @@ This is the backend for the BlogPost application, built using Node.js, Express, 
    npm install
    ```
 
-3. Set up environment variables:
-   Create a `.env.dev` or `.env.prod` file in the root directory and add the following variables:
-   ```env
-   CONNECTION_STRING=your_mongodb_connection_string
-   DBNAME=your_database_name
-   JWTSECRTKEY=your_jwt_secret_key
-   PORT=your_port_number
-   ```
+3. Create a `.env.dev` or `.env.prod` file in the root directory and add the necessary environment variables (see [Environment Variables](#environment-variables)).
 
-## Usage
-
-1. Build the project:
-
+4. Build the project:
    ```sh
    npm run build
    ```
 
-2. Start the server:
+## Usage
 
-   ```sh
-   npm start
-   ```
+1. Start the development server:
 
-3. For development, use:
    ```sh
    npm run dev
    ```
 
+2. Start the production server:
+   ```sh
+   npm run prod
+   ```
+
 ## API Endpoints
 
-### User Routes
-
-- `POST /api/v1/user/createUser` - Create a new user
-- `GET /api/v1/user/username-available/:username` - Check if a username is available
-- `PATCH /api/v1/user/update` - Update user details (authenticated)
-- `DELETE /api/v1/user/delete` - Delete user account (authenticated)
-- `GET /api/v1/user/getall` - Get all users (admin only)
-
-### Post Routes
-
-- `POST /api/v1/post/create` - Create a new post (authenticated)
-- `PATCH /api/v1/post/like/:postid` - Like a post (authenticated)
-- `PATCH /api/v1/post/unlike/:postid` - Unlike a post (authenticated)
-- `DELETE /api/v1/post/:postid` - Delete a post (authenticated, same user)
-- `PATCH /api/v1/post/:postid` - Update a post (authenticated, same user)
-
-### Comment Routes
-
-- `POST /api/v1/comment/add` - Add a comment (authenticated)
-- `POST /api/v1/comment/seeAllComments` - Get all comments of a post
-- `DELETE /api/v1/comment/:id` - Delete a comment (authenticated)
-- `PATCH /api/v1/comment/:id` - Update a comment (authenticated)
-- `PUT /api/v1/comment/:id/like` - Like a comment (authenticated)
-- `PUT /api/v1/comment/:id/unlike` - Unlike a comment (authenticated)
-
-### Login Routes
+### Authentication
 
 - `POST /api/v1/login` - Login a user
 
+### Users
+
+- `POST /api/v1/user/createUser` - Create a new user
+- `GET /api/v1/user/username-available/:username` - Check if a username is available
+- `PATCH /api/v1/user/update` - Update user details (authenticated users only)
+- `DELETE /api/v1/user/delete` - Delete a user (authenticated users only)
+- `GET /api/v1/user/getall` - Get all users (admin only)
+
+### Posts
+
+- `POST /api/v1/post/create` - Create a new post (authenticated users only)
+- `PATCH /api/v1/post/like/:postid` - Like a post (authenticated users only)
+- `PATCH /api/v1/post/unlike/:postid` - Unlike a post (authenticated users only)
+- `PATCH /api/v1/post/:postid` - Update a post (authenticated users only)
+- `DELETE /api/v1/post/:postid` - Delete a post (authenticated users only)
+
+### Comments
+
+- `POST /api/v1/comment/add` - Add a comment to a post (authenticated users only)
+- `PATCH /api/v1/comment/:id` - Update a comment (authenticated users only)
+- `DELETE /api/v1/comment/:id` - Delete a comment (authenticated users only)
+- `PUT /api/v1/comment/:id/like` - Like a comment (authenticated users only)
+- `PUT /api/v1/comment/:id/unlike` - Unlike a comment (authenticated users only)
+- `POST /api/v1/comment/seeAllComments` - Get all comments of a post
+
+### Subscriptions
+
+- `PUT /api/v1/sub/subscribe/:authorid` - Subscribe to an author (authenticated users only)
+- `PUT /api/v1/sub/unsubscribe/:authorid` - Unsubscribe from an author (authenticated users only)
+
 ## Environment Variables
 
-- `CONNECTION_STRING` - MongoDB connection string
-- `DBNAME` - Name of the MongoDB database
-- `JWTSECRTKEY` - Secret key for JWT
-- `PORT` - Port number for the server
+Create a `.env` file in the root directory and add the following variables:
+
+```env
+PORT=3000
+CONNECTION_STRING=your_mongodb_connection_string
+DBNAME=your_database_name
+JWTSECRTKEY=your_jwt_secret_key
+```
 
 ## Scripts
 
@@ -103,9 +105,31 @@ This is the backend for the BlogPost application, built using Node.js, Express, 
 - `npm run dev` - Start the server in development mode
 - `npm run lint` - Run Prettier to format the code
 
+## Folder Structure
+
+```
+BlogPost-backend/
+├── dist/                   # Compiled files
+├── src/                    # Source files
+│   ├── controllers/        # Controllers for handling requests
+│   ├── middlewares/        # Custom middleware
+│   ├── models/             # Mongoose models
+│   ├── routes/             # Express routes
+│   ├── utilities/          # Utility functions and types
+│   └── app.ts              # Entry point of the application
+├── .env                    # environment variable file
+├── .gitignore              # Git ignore file
+├── .prettierrc             # Prettier configuration
+├── .prettierignore         # Prettier ignore file
+├── lint-staged.config.js   # Lint-staged configuration
+├── package.json            # NPM package configuration
+├── tsconfig.json           # TypeScript configuration
+└── README.md               # Project documentation
+```
+
 ## Contributing
 
-Contributions are welcome! Please provide suggestions about how can I improve this project.
+Contributions and suggestions are welcome! Please open an issue or submit a pull request for any changes. If you have any suggestion on how to improve myself please connect with me on linkedin [@titassarkar](https://www.linkedin.com/in/titassarkar)
 
 ## License
 
@@ -115,3 +139,7 @@ This project is licensed under the ISC License.
 
 I'm a Frontend React developer, with 3+ years of experience. Currently In process of becoming a full stack developer...
 This is my first project on `node`, `EXPRESS` and `MONGODB`. Please excuse my mistakes.
+
+## Authors
+
+- [@titassarkar](https://www.linkedin.com/in/titassarkar)
