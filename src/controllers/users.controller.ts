@@ -4,6 +4,7 @@ import { ICustomRequest, INewUserReq } from "../utilities/types.js";
 import Users from "../models/users.model.js";
 import { rmSync, rm, promises as fsPromises } from "fs";
 import { getUserById, successJSON } from "../utilities/utility.js";
+import { encryptPassword } from "../utilities/encryption.js";
 
 export const createNewUser = async (req: Request<{}, {}, INewUserReq>, res: Response, next: NextFunction) => {
   try {
@@ -22,13 +23,15 @@ export const createNewUser = async (req: Request<{}, {}, INewUserReq>, res: Resp
 
     const newUser = new Users({
       ...req.body,
+      userName,
+      email,
       photo: photo?.path,
       dob: new Date(dob),
     });
-    newUser.password = password;
+    newUser.password = await encryptPassword(password);
     const createdUser = await newUser.save();
 
-    res.status(201).json(`Account created successfully with username ${createdUser.userName}`);
+    res.status(201).json(successJSON(`Account created successfully with username ${createdUser.userName}`));
   } catch (error) {
     const photo = req.file;
     if (photo) {
@@ -128,6 +131,27 @@ export const deleteUser = async (req: ICustomRequest, res: Response, next: NextF
   }
 };
 
+export const searchUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { keyword } = req.query;
+    if (!keyword || typeof keyword !== 'string')
+      throw new ErrorHandler("Please provide the keyword to search for", 400);
+    const matchedUsers = await Users.find({
+      $or: [
+        { userName: { $regex: keyword, $options: 'i' } }, // Search in userName
+        { name: { $regex: keyword, $options: 'i' } } // Search in name
+      ]
+    }).sort({ createdAt: -1 });
+    if (matchedUsers.length === 0) throw new ErrorHandler(`No User found by name or username ${keyword}`, 404);
+    res.status(200).json(successJSON(`${matchedUsers.length} Users found`, {
+      numberOfusers: matchedUsers.length,
+      users: matchedUsers
+    }));
+  } catch (error) {
+    next(error)
+  }
+};
+
 /**
  * ADMIN only
  */
@@ -144,3 +168,16 @@ export const getAllUsers = async (_req: Request, res: Response, next: NextFuncti
   }
 };
 
+export const deleteUserById = async (req: ICustomRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) throw new ErrorHandler("Please Log in", 403);
+    const { userid } = req.params;
+    const userDeleted = await Users.findByIdAndDelete(userid);
+    if (!userDeleted) throw new ErrorHandler("User doesn't exist");
+    const folderPath = `uploads/${userDeleted._id.toString()}`;
+    await fsPromises.rm(folderPath, { recursive: true });
+    res.status(200).json(successJSON(`User ${userDeleted.userName} deleted successfully`));
+  } catch (error) {
+    next(error)
+  }
+};

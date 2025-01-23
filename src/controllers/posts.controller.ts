@@ -116,3 +116,22 @@ export const unLikeApost = async (req: ICustomRequest, res: Response, next: Next
     next(error)
   }
 };
+
+export const searchPost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const keyword = req.query.keyword as string;
+    if (!keyword || typeof keyword !== 'string' || keyword.length < 3) throw new ErrorHandler("Please provide a key atleast 3 character long", 400);
+    const matchedPosts = await Posts.find({
+      $or: [
+        { title: { $regex: keyword, $options: 'i' } },
+        { content: { $regex: keyword, $options: 'i' } },
+        { tags: { $regex: keyword, $options: 'i' } },
+        { categories: { $regex: keyword, $options: 'i' } },
+      ]
+    });
+    if (!matchedPosts) throw new ErrorHandler();
+    res.status(200).json(successJSON(`${matchedPosts.length} posts found`, { matched: matchedPosts.length, posts: matchedPosts }));
+  } catch (error) {
+    next(error)
+  }
+}

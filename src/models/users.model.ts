@@ -75,6 +75,7 @@ userSchema.post('save', async function (doc, next) {
     const loginDetails = new Login({ userId: doc._id, password: user.password ?? 'Demo@123' });
     await loginDetails.save();
     const subScriberDetails = new Subscribers({ authorId: doc._id });
+    subScriberDetails.save();
 
     /**
      * Update the upload location name if username changes
@@ -102,7 +103,7 @@ userSchema.pre('findOneAndDelete', async function (next) {
     if (!deletedSubscriber.acknowledged) throw new ErrorHandler("Unable to delete subscribers details");
     const deletedLogin = await Login.deleteOne({ userId });
     if (!deletedLogin.acknowledged) throw new ErrorHandler("Unable to delete user");
-    const postIds = await Posts.find({ authorId: userId }).then((posts) => posts.map((post) => post._id));
+    const postIds = await Posts.find({ authorId: userId }).select("_id");
     const deletedCommentsByUserId = await Comments.deleteMany({ authorId: userId });
     if (!deletedCommentsByUserId.acknowledged) throw new ErrorHandler("Unable to delete user's Comments");
     const deletedCommentsFromPosts = await Comments.deleteMany({ postId: { $in: postIds } });
@@ -112,6 +113,16 @@ userSchema.pre('findOneAndDelete', async function (next) {
     next();
   } catch (error) {
     next(error as CallbackError);
+  }
+});
+
+userSchema.post('findOneAndDelete', async function (next) {
+  const userId = this.getQuery()._id;
+  const subscribedTo = await Subscribers.find({ subscribedBy: { $in: [userId] } });
+  if (subscribedTo.length) {
+    subscribedTo.forEach(async (user) => {
+      await user.updateOne({ $pull: { subscribedBy: userId } });
+    });
   }
 });
 

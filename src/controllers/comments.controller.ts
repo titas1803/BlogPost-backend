@@ -93,7 +93,7 @@ export const unLikeAComment = async (req: ICustomRequest, res: Response, next: N
     if (!comment) throw new ErrorHandler("Comment not found");
     const unlikedComment = await comment.updateOne({ $pull: { likedBy: userId } });
     if (!unlikedComment.acknowledged) throw new ErrorHandler();
-    res.status(200).json(successJSON("Comment liked"));
+    res.status(200).json(successJSON("Like removed from the comment"));
   } catch (error) {
     next(error)
   }

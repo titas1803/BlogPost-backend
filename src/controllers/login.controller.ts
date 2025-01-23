@@ -5,6 +5,7 @@ import Users from "../models/users.model.js";
 import Login from "../models/login.model.js";
 import { ILoginReq } from "../utilities/types.js";
 import { successJSON } from "../utilities/utility.js";
+import { passwordMatch } from "../utilities/encryption.js";
 
 const secretKey = process.env.JWTSECRTKEY!;
 
@@ -22,7 +23,8 @@ export const loginUser = async (req: Request<{}, {}, ILoginReq>, res: Response, 
 
     if (!loginDetails)
       throw new ErrorHandler("User not found2", 404);
-    if (loginDetails.password !== password)
+    const passwordMatches = await passwordMatch(password, loginDetails.password);
+    if (passwordMatches)
       throw new ErrorHandler("Password doesn't match", 404);
 
     jwt.sign({ _id: user._id, userName: user.userName }, secretKey, { expiresIn: '1h' }, (err: Error | null, token: string | undefined) => {

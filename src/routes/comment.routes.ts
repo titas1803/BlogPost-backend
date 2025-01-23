@@ -6,12 +6,12 @@ const app = express.Router();
 
 app.use(authenticateToken);
 
-app.post("/add", addComment);
-app.post("/seeAllComments", getAllCommentsOfAPost);
+app.post("/add/:postid", addComment);
+app.get("/seeAllComments/:postid", getAllCommentsOfAPost);
 
 
-app.route("/:id").delete(deleteComment).patch(updateComment);
-app.put("/:id/like", likeAComment);
-app.put("/:id/unlike", unLikeAComment);
+app.route("/:commentid").delete(deleteComment).patch(updateComment);
+app.put("/:commentid/like", likeAComment);
+app.put("/:commentid/unlike", unLikeAComment);
 
 export default app;
