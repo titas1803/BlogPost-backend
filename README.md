@@ -2,7 +2,7 @@
 
 # BlogPost Backend
 
-This is the backend for the BlogPost application, built using Node.js, Express, and MongoDB. It provides APIs for user authentication, blog post management, comments, and subscriptions.
+This is the backend for the BlogPost application, built using the MERN stack (MongoDB, Express, React, Node.js). This backend handles user authentication, blog post management, comments, and subscriptions.
 
 ## Table of Contents
 
@@ -54,47 +54,51 @@ This is the backend for the BlogPost application, built using Node.js, Express, 
 
 ### Authentication
 
-- `POST /api/v1/login` - Login a user
+- `POST /api/v1/login`: Login a user.
 
 ### Users
 
-- `POST /api/v1/user/createUser` - Create a new user
+- `POST /api/v1/user/createUser`: Create a new user.
 - `GET /api/v1/user/username-available/:username` - Check if a username is available
-- `PATCH /api/v1/user/update` - Update user details (authenticated users only)
-- `DELETE /api/v1/user/delete` - Delete a user (authenticated users only)
-- `GET /api/v1/user/getall` - Get all users (admin only)
+- `PATCH /api/v1/user/update`: Update user details.
+- `DELETE /api/v1/user/delete`: Delete the logged-in user.
+- `GET /api/v1/user/search?keyword={search-keyword}`: Search for users.
+- `GET /api/v1/user/getall`: Get all users (Admin only).
+- `DELETE /api/v1/user/delete-user/:userid`: Delete a user by ID (Admin only).
 
 ### Posts
 
-- `POST /api/v1/post/create` - Create a new post (authenticated users only)
-- `PATCH /api/v1/post/like/:postid` - Like a post (authenticated users only)
-- `PATCH /api/v1/post/unlike/:postid` - Unlike a post (authenticated users only)
-- `PATCH /api/v1/post/:postid` - Update a post (authenticated users only)
-- `DELETE /api/v1/post/:postid` - Delete a post (authenticated users only)
+- `POST /api/v1/post/create`: Create a new post.
+- `PATCH /api/v1/post/:postid`: Update a post.
+- `DELETE /api/v1/post/:postid`: Delete a post.
+- `PUT /api/v1/post/like/:postid`: Like a post.
+- `PUT /api/v1/post/unlike/:postid`: Unlike a post.
+- `GET /api/v1/post/search?keyword={search-keyword}`: Search for posts.
 
 ### Comments
 
-- `POST /api/v1/comment/add` - Add a comment to a post (authenticated users only)
-- `PATCH /api/v1/comment/:id` - Update a comment (authenticated users only)
-- `DELETE /api/v1/comment/:id` - Delete a comment (authenticated users only)
-- `PUT /api/v1/comment/:id/like` - Like a comment (authenticated users only)
-- `PUT /api/v1/comment/:id/unlike` - Unlike a comment (authenticated users only)
-- `POST /api/v1/comment/seeAllComments` - Get all comments of a post
+- `POST /api/v1/comment/add/:postid`: Add a comment to a post.
+- `PATCH /api/v1/comment/:commentid`: Update a comment.
+- `DELETE /api/v1/comment/:commentid`: Delete a comment.
+- `PUT /api/v1/comment/:commentid/like`: Like a comment.
+- `PUT /api/v1/comment/:commentid/unlike`: Unlike a comment.
+- `GET /api/v1/comment/seeAllComments/:postid`: Get all comments of a post.
 
 ### Subscriptions
 
-- `PUT /api/v1/sub/subscribe/:authorid` - Subscribe to an author (authenticated users only)
-- `PUT /api/v1/sub/unsubscribe/:authorid` - Unsubscribe from an author (authenticated users only)
+- `PUT /api/v1/sub/subscribe/:authorid`: Subscribe to an author.
+- `PUT /api/v1/sub/unsubscribe/:authorid`: Unsubscribe from an author.
+- `GET /api/v1/sub/getSubscribers`: Get the list of subscribers.
 
 ## Environment Variables
 
 Create a `.env` file in the root directory and add the following variables:
 
 ```env
-PORT=3000
-CONNECTION_STRING=your_mongodb_connection_string
-DBNAME=your_database_name
-JWTSECRTKEY=your_jwt_secret_key
+BLOGPOST_BACKEND_PORT=3000
+BLOGPOST_BACKEND_CONNECTION_STRING=your_mongodb_connection_string
+BLOGPOST_BACKEND_DBNAME=your_database_name
+BLOGPOST_BACKEND_JWTSECRTKEY=your_jwt_secret_key
 ```
 
 ## Scripts

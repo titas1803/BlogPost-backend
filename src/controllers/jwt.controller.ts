@@ -1,14 +1,12 @@
-import { NextFunction, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { NextFunction, Request, Response } from 'express';
 import ErrorHandler from '../utilities/Error.class.js';
-import { ICustomRequest } from '../utilities/types.js';
+import jwt from 'jsonwebtoken';
 
 const secretKey = process.env.BLOGPOST_BACKEND_JWTSECRTKEY!;
 
-// Middleware to verify JWT token
-export const authenticateToken = async (
-  req: ICustomRequest,
-  _res: Response,
+export const verifyJWT = async (
+  req: Request,
+  res: Response,
   next: NextFunction
 ) => {
   try {
@@ -16,7 +14,6 @@ export const authenticateToken = async (
     if (!authHeader) {
       throw new ErrorHandler(`Authorization header is missing`, 401);
     }
-
     const token = authHeader.split(' ')[1]; // Extract token from 'Bearer <token>'
     if (!token) {
       throw new ErrorHandler('Please login', 401);
@@ -24,6 +21,7 @@ export const authenticateToken = async (
 
     jwt.verify(token, secretKey, (err, user) => {
       if (err) {
+        console.log(token, authHeader);
         throw new ErrorHandler('Invalid or expired token', 401);
       }
 
@@ -32,14 +30,9 @@ export const authenticateToken = async (
         throw new ErrorHandler('User ID not found in token', 401);
       }
 
-      // Attach user ID to the request body for further use
-      req.user = {
-        userId: decodedUser._id as string,
-        userName: decodedUser.userName as string,
-      };
-      next();
+      res.status(200).json('auth token verified');
     });
-  } catch (err) {
-    next(err); // Pass error to the global error handler
+  } catch (error) {
+    next(error);
   }
 };

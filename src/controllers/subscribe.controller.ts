@@ -16,6 +16,8 @@ export const subscribe = async (req: ICustomRequest, res: Response, next: NextFu
       res.status(200).json(successJSON("You are already subscribed"));
     const update = await Subscribers.findOneAndUpdate({ authorId }, { $addToSet: { subscribedBy: userId } });
     if (!update) throw new ErrorHandler("Author not found", 404);
+    const updateSubscribeTo = await Subscribers.findOneAndUpdate({ authorId: userId }, { $addToSet: { subscribedTo: authorId } });
+    if (!updateSubscribeTo) throw new ErrorHandler("couldn't subscribe, try again");
     res.status(200).json(successJSON("Subscribed successfully"));
   } catch (error) {
     next(error);
@@ -28,6 +30,8 @@ export const unSubscribe = async (req: ICustomRequest, res: Response, next: Next
     const authorId = req.params.authorid;
     const update = await Subscribers.findOneAndUpdate({ authorId }, { $pull: { subscribedBy: userId } });
     if (!update) throw new ErrorHandler("Author not found", 404);
+    const updateSubscribeTo = await Subscribers.findOneAndUpdate({ authorId: userId }, { $pull: { subscribedTo: authorId } });
+    if (!updateSubscribeTo) throw new ErrorHandler("couldn't unsubscribe, try again");
     res.status(200).json(successJSON("unsubscribed successfully"));
   } catch (error) {
     next(error);
@@ -46,4 +50,18 @@ export const getSubscribers = async (req: ICustomRequest, res: Response, next: N
   } catch (error) {
     next(error)
   }
-}
+};
+
+export const getSubscribeTo = async (req: ICustomRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const subscribersList = await Subscribers.findOne({ authorId: userId });
+    if (!subscribersList) throw new ErrorHandler("Details not found");
+    const subscribedToAuthors = await Users.find({ _id: { $in: subscribersList.subscribedTo } }).select("_id userName")
+    res.status(200).json(successJSON(`You are subscribed to ${subscribersList.subscribedTo.length} authors`, {
+      subscribedTo: subscribedToAuthors
+    }))
+  } catch (error) {
+    next(error)
+  }
+};

@@ -1,5 +1,5 @@
-import mongoose, { ObjectId } from "mongoose";
-import { Request } from "express";
+import mongoose, { ObjectId } from 'mongoose';
+import { Request } from 'express';
 
 export interface IUser extends Document {
   _id: ObjectId;
@@ -15,13 +15,21 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   // Virtual attribute
-  noOfSubscribers: number
+  noOfSubscribers?: {
+    _id: '67993d0a7b28b3ee2fff64ba';
+    authorId: '67993d0a7b28b3ee2fff64b6';
+    subscribedBy: [];
+  };
+  noOfSubscribedTo?: {
+    _id: '67993d0a7b28b3ee2fff64ba';
+    authorId: '67993d0a7b28b3ee2fff64b6';
+    subscribedTo: [];
+  };
 }
 
 export interface INewUserReq {
   name: string;
   userName: string;
-  photo: string;
   phone: string;
   email: string;
   gender: 'male' | 'female';
@@ -37,48 +45,49 @@ export interface ILogin extends Document {
 }
 
 export interface IPost extends Document {
-  _id: ObjectId,
-  title: string,
-  content: string, // Main blog content
-  authorId: ObjectId, // References the Users collection
-  tags: string[], // List of tags (e.g., "tech", "lifestyle")
-  categories: string[], // Categorization for the blog
-  coverImage: string, // URL to cover image
-  likedBy: string[],
-  isPublished: boolean,
-  createdAt: Date,
-  updatedAt: Date
+  _id: ObjectId;
+  title: string;
+  content: string; // Main blog content
+  authorId: ObjectId; // References the Users collection
+  tags: string[]; // List of tags (e.g., "tech", "lifestyle")
+  categories: string[]; // Categorization for the blog
+  coverImage: string; // URL to cover image
+  likedBy: string[];
+  isPublished: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   //virtual attribute
-  likes: number,
-  commentsCount: number,
+  likes: number;
+  commentsCount: number;
 }
 
 export interface IComment extends Document {
-  _id: ObjectId,
-  postId: ObjectId, // References the Posts collection
-  authorId: ObjectId, // References the Users collection
-  commentText: string,
-  likedBy: string[],
-  createdAt: Date,
-  updatedAt: Date
+  _id: ObjectId;
+  postId: ObjectId; // References the Posts collection
+  authorId: ObjectId; // References the Users collection
+  commentText: string;
+  likedBy: string[];
+  createdAt: Date;
+  updatedAt: Date;
   // virtual attribute
-  likes: number,
+  likes: number;
 }
 
 export interface ISubscriber extends Document {
   _id: ObjectId;
   authorId: ObjectId;
   subscribedBy: string[];
+  subscribedTo: string[];
 }
 
 export interface ILoginReq {
-  username: string,
-  password: string
+  username: string;
+  password: string;
 }
 
 export interface ICustomRequest extends Request {
   user?: {
     userId: string;
     userName: string;
-  }
+  };
 }

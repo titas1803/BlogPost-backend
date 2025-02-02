@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
 
 export const connectDB = () => {
-  mongoose.connect(process.env.CONNECTION_STRING ?? '', {
-    dbName: process.env.DBNAME ?? ''
-  }).then((e) => console.log(`Connected to db ${process.env.DBNAME ?? ''}`)).catch(err => console.log(err));
+  const connectionString = process.env.BLOGPOST_BACKEND_CONNECTION_STRING;
+  const dbName = process.env.BLOGPOST_BACKEND_DBNAME
+  if (connectionString && dbName) {
+    mongoose.connect(connectionString, {
+      dbName: dbName
+    }).then((e) => console.log(`Connected to db ${process.env.BLOGPOST_BACKEND_DBNAME ?? ''}`)).catch(err => console.log(err));
+  } else {
+    throw new Error("Connection String or DB Name isn't speified");
+  }
 }

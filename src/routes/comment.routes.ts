@@ -4,6 +4,10 @@ import { authenticateToken } from "../middlewares/userAuthentication.js";
 
 const app = express.Router();
 
+/**
+ * /api/v1/comment
+ */
+
 app.use(authenticateToken);
 
 app.post("/add/:postid", addComment);
