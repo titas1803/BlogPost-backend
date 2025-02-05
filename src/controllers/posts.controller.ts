@@ -112,7 +112,15 @@ export const getAPost = async (
 ) => {
   try {
     const postid = req.params.postid;
-    const post = await Posts.findById(postid).populate('commentsCount').lean();
+    const post = await Posts.findById(postid)
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
+      .lean();
     if (!post) throw new ErrorHandler("post isn't available anymore", 404);
     res.status(200).json(
       successJSON('1 post found', {
@@ -185,9 +193,17 @@ export const searchPost = async (
       .sort({
         createdAt: -1,
       })
-      .populate('commentsCount')
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
       .lean();
     if (!matchedPosts) throw new ErrorHandler();
+    if (matchedPosts.length === 0)
+      throw new ErrorHandler(`No Post found by ${keyword}`, 404);
     res.status(200).json(
       successJSON(`${matchedPosts.length} posts found`, {
         matched: matchedPosts.length,

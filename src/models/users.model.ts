@@ -68,14 +68,6 @@ userSchema.virtual('noOfSubscribers', {
   justOne: true, // Ensure it returns a single document
 });
 
-// Count of people this user has subscribed to
-userSchema.virtual('noOfSubscribedTo', {
-  ref: 'Subscribers', // Reference to the Subscribers model
-  localField: '_id', // Match user _id
-  foreignField: 'authorId', // Find subscriptions where user is the subscriber
-  justOne: true, // Ensure it returns a single document
-});
-
 userSchema.post('save', async function (doc, next) {
   try {
     const user = this as mongoose.Document & { password?: string };

@@ -19,10 +19,6 @@ export interface IUser extends Document {
     _id: '67993d0a7b28b3ee2fff64ba';
     authorId: '67993d0a7b28b3ee2fff64b6';
     subscribedBy: [];
-  };
-  noOfSubscribedTo?: {
-    _id: '67993d0a7b28b3ee2fff64ba';
-    authorId: '67993d0a7b28b3ee2fff64b6';
     subscribedTo: [];
   };
 }

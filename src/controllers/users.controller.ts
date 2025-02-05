@@ -106,9 +106,8 @@ export const updateUser = async (
       .populate([
         {
           path: 'noOfSubscribers',
-          select: 'subscribedBy',
+          select: ['subscribedBy', 'subscribedTo'],
         },
-        { path: 'noOfSubscribedTo', select: 'subscribedTo' },
       ])
       .lean();
     if (!updatedUser)
@@ -145,7 +144,7 @@ export const updateProfilePhoto = async (
     );
     if (!updatedUser)
       throw new ErrorHandler('Not able to update the photo', 400);
-    rmSync(user.photo, { recursive: true });
+    if (user.photo) rmSync(user.photo, { recursive: true });
     res
       .status(200)
       .json(successJSON('Profile photo updated successfully', { photo }));
@@ -206,6 +205,7 @@ export const searchUser = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('called');
   try {
     const { keyword } = req.query;
     if (!keyword || typeof keyword !== 'string')
@@ -215,7 +215,15 @@ export const searchUser = async (
         { userName: { $regex: keyword, $options: 'i' } }, // Search in userName
         { name: { $regex: keyword, $options: 'i' } }, // Search in name
       ],
-    }).sort({ createdAt: -1 });
+    })
+      .sort({ createdAt: -1 })
+      .populate([
+        {
+          path: 'noOfSubscribers',
+          select: ['subscribedBy', 'subscribedTo'],
+        },
+      ])
+      .lean();
     if (matchedUsers.length === 0)
       throw new ErrorHandler(
         `No User found by name or username ${keyword}`,
@@ -223,8 +231,9 @@ export const searchUser = async (
       );
     res.status(200).json(
       successJSON(`${matchedUsers.length} Users found`, {
-        numberOfusers: matchedUsers.length,
+        matched: matchedUsers.length,
         users: matchedUsers,
+        subscribe: matchedUsers[0],
       })
     );
   } catch (error) {
@@ -245,9 +254,8 @@ export const getUserDetails = async (
       .populate([
         {
           path: 'noOfSubscribers',
-          select: 'subscribedBy',
+          select: ['subscribedBy', 'subscribedTo'],
         },
-        { path: 'noOfSubscribedTo', select: 'subscribedTo' },
       ])
       .lean();
     if (!userDetails) throw new ErrorHandler('User not found.', 404);
@@ -262,7 +270,7 @@ export const getUserDetails = async (
       dob: userDetails.dob,
       noOfSubscribers: userDetails.noOfSubscribers?.subscribedBy?.length ?? 0,
       noOfSubscriberedTo:
-        userDetails.noOfSubscribedTo?.subscribedTo?.length ?? 0,
+        userDetails.noOfSubscribers?.subscribedTo?.length ?? 0,
     };
     res.status(200).json(
       successJSON('useer details found', {
