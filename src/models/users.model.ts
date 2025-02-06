@@ -53,6 +53,10 @@ export const userSchema = new mongoose.Schema(
       required: [true, 'Choose a unique username'],
       unique: [true, 'Username already exists'],
     },
+    bio: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,

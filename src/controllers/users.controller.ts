@@ -273,7 +273,7 @@ export const getUserDetails = async (
         userDetails.noOfSubscribers?.subscribedTo?.length ?? 0,
     };
     res.status(200).json(
-      successJSON('useer details found', {
+      successJSON('User details found', {
         user: updatedUserDetails,
       })
     );

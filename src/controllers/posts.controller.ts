@@ -28,8 +28,8 @@ export const createNewPost = async (
       ...req.body,
       image: [...imagePath],
       authorId,
-      tags: tags.split(' '),
-      categories: categories.split(','),
+      tags: tags?.split(' ') ?? '',
+      categories: categories?.split(',') ?? '',
       likedBy: [],
       isPublished,
     }).save();

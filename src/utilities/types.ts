@@ -12,6 +12,7 @@ export interface IUser extends Document {
   gender: 'male' | 'female';
   dob: Date;
   password: string;
+  bio: string;
   createdAt: Date;
   updatedAt: Date;
   // Virtual attribute

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import ErrorHandler from '../utilities/Error.class.js';
 import jwt from 'jsonwebtoken';
+import { successJSON } from '../utilities/utility.js';
 
 const secretKey = process.env.BLOGPOST_BACKEND_JWTSECRTKEY!;
 
@@ -30,7 +31,11 @@ export const verifyJWT = async (
         throw new ErrorHandler('User ID not found in token', 401);
       }
 
-      res.status(200).json('auth token verified');
+      res.status(200).json(
+        successJSON('auth token verified', {
+          userid: decodedUser._id,
+        })
+      );
     });
   } catch (error) {
     next(error);
