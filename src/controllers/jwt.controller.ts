@@ -22,7 +22,6 @@ export const verifyJWT = async (
 
     jwt.verify(token, secretKey, (err, user) => {
       if (err) {
-        console.log(token, authHeader);
         throw new ErrorHandler('Invalid or expired token', 401);
       }
 

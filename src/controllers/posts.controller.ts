@@ -1,10 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import ErrorHandler from '../utilities/Error.class.js';
-import { ICustomRequest } from '../utilities/types.js';
+import { ICustomRequest, IPopulatedPost } from '../utilities/types.js';
 import Users from '../models/users.model.js';
 import Posts from '../models/posts.model.js';
 import { successJSON } from '../utilities/utility.js';
 import { rmSync } from 'fs';
+import {
+  emitDeletePost,
+  emitNewPost,
+  emitUpdatePost,
+} from '../utilities/socket.js';
 
 export const createNewPost = async (
   req: ICustomRequest,
@@ -24,7 +29,7 @@ export const createNewPost = async (
     const user = await Users.findById(authorId);
     if (!user) throw new ErrorHandler('Please login', 401);
 
-    await new Posts({
+    const newPost = await new Posts({
       ...req.body,
       image: [...imagePath],
       authorId,
@@ -34,6 +39,21 @@ export const createNewPost = async (
       isPublished,
     }).save();
 
+    const populatedPost = await Posts.findById(newPost._id)
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
+      .lean();
+
+    if (populatedPost) {
+      emitNewPost(authorId, populatedPost as IPopulatedPost);
+    } else {
+      throw new ErrorHandler('Error populating post', 500);
+    }
     res.status(201).json(successJSON('Post created suuccessfully'));
   } catch (error) {
     if (req.files && Array.isArray(req.files)) {
@@ -74,9 +94,18 @@ export const updatePost = async (
         isPublished: isPublished ?? post.isPublished,
         images: imagePath ?? post.images,
       },
-    });
-
+    })
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
+      .lean();
     if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
+
+    emitUpdatePost(req.user.userId, updatedPost as IPopulatedPost);
     res.status(200).json(successJSON('Post updated successfully'));
   } catch (error) {
     next(error);
@@ -99,6 +128,7 @@ export const deleteAPost = async (
         'Post not found or you are not authorized to delete the post',
         404
       );
+    emitDeletePost(deletedPost.authorId.toString(), deletedPost.id);
     res.status(200).json(successJSON(`'${deletedPost.title}' is deleted`));
   } catch (error) {
     next(error);
@@ -139,12 +169,24 @@ export const likeAPost = async (
 ) => {
   try {
     const postid = req.params.postid;
-    const post = await Posts.findById(postid);
-    if (!post) throw new ErrorHandler('post might not be available', 404);
-    const likedPost = await post.updateOne({
+    const likedPost = await Posts.findByIdAndUpdate(postid, {
       $addToSet: { likedBy: req.user?.userId },
     });
-    if (!likedPost.acknowledged) throw new ErrorHandler();
+    if (!likedPost) throw new ErrorHandler('post might not be available', 404);
+
+    const updatedPost = await Posts.findById(likedPost.id)
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
+      .lean();
+    emitUpdatePost(
+      likedPost.authorId.toString(),
+      updatedPost as IPopulatedPost
+    );
     res.status(200).json(successJSON('post liked successfuly'));
   } catch (error) {
     next(error);
@@ -158,12 +200,25 @@ export const unLikeApost = async (
 ) => {
   try {
     const postid = req.params.postid;
-    const post = await Posts.findById(postid);
-    if (!post) throw new ErrorHandler('post might not be available', 404);
-    const unLikedPost = await post.updateOne({
+    const unLikedPost = await Posts.findByIdAndUpdate(postid, {
       $pull: { likedBy: req.user?.userId },
     });
-    if (!unLikedPost.acknowledged) throw new ErrorHandler();
+    if (!unLikedPost)
+      throw new ErrorHandler('post might not be available', 404);
+    const updatedPost = await Posts.findById(unLikedPost.id)
+      .populate([
+        'commentsCount',
+        {
+          path: 'authorDetails',
+          select: ['name', 'userName'],
+        },
+      ])
+      .lean();
+
+    emitUpdatePost(
+      unLikedPost.authorId.toString(),
+      updatedPost as IPopulatedPost
+    );
     res.status(200).json(successJSON('post unlikedliked successfuly'));
   } catch (error) {
     next(error);

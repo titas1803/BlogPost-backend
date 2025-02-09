@@ -9,6 +9,8 @@ import postRoute from './routes/post.routes.js';
 import subscribeRoute from './routes/subscribe.routes.js';
 import jwtRoute from './routes/jwt.routes.js';
 import cors from 'cors';
+import { createServer } from 'http';
+import initSocket from './utilities/socket.js';
 
 config();
 
@@ -19,7 +21,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://www.example.com'],
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
     methods: 'GET,POST,PATCH,PUT,DELETE',
   })
 );
@@ -41,6 +43,10 @@ app.use('/uploads', express.static('uploads'));
 
 app.use(errorMiddleWare);
 
-app.listen(PORT, () => {
+const http = createServer(app);
+
+initSocket(http);
+
+http.listen(PORT, () => {
   console.log(`BlogPost is running at port ${PORT}`);
 });

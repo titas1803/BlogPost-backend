@@ -58,6 +58,14 @@ export interface IPost extends Document {
   commentsCount: number;
 }
 
+export interface IPopulatedPost extends IPost {
+  authorDetails?: {
+    _id: string;
+    name: string;
+    userName: string;
+  };
+}
+
 export interface IComment extends Document {
   _id: ObjectId;
   postId: ObjectId; // References the Posts collection

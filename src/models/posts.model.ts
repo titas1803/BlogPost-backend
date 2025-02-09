@@ -33,7 +33,8 @@ const postSchema = new mongoose.Schema(
       default: [],
     },
     likedBy: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: 'Users',
       default: [],
     },
     isPublished: {
