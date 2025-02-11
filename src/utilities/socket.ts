@@ -18,7 +18,20 @@ const initSocket = (server: HttpServer) => {
     // Join a room for a specific user's profile
     socket.on('join_profile', (userId) => {
       socket.join(userId);
-      console.log(`User ${socket.id} joined room: ${userId}`);
+    });
+
+    // Leave a room for a specific user's profile
+    socket.on('leave_profile', (userId) => {
+      socket.leave(userId);
+    });
+
+    // Join a room for a specific post
+    socket.on('join_post', (postId) => {
+      socket.join(postId);
+    });
+    // Leave a room for a specific post
+    socket.on('leave_post', (postId) => {
+      socket.leave(postId);
     });
 
     socket.on('disconnect', () => {
@@ -29,24 +42,34 @@ const initSocket = (server: HttpServer) => {
   return io;
 };
 
-// Function to emit a update post event
-export function emitUpdatePost(userid: string, post: IPopulatedPost) {
-  if (io) {
-    // console.log('updated post', post);
-    io.to(userid).emit('update_post', post); // Notify all clients
-  }
-}
-
 export function emitNewPost(userid: string, post: IPopulatedPost) {
   if (io) {
-    // console.log('new post', post);
     io.to(userid).emit('new_post', post); // Notify all clients
   }
 }
 
-export function emitDeletePost(userid: string, postid: string) {
+// Function to emit a update post event
+export function emitUpdatePostInProfile(userid: string, post: IPopulatedPost) {
   if (io) {
-    io.to(userid).emit('delete_post', postid);
+    io.to(userid).emit('update_post_inprofile', post); // Notify all clients
+  }
+}
+
+export function emitDeletePostInProfile(userid: string, postid: string) {
+  if (io) {
+    io.to(userid).emit('delete_post_inprofile', postid);
+  }
+}
+// Function to emit a update post event
+export function emitUpdatePost(postid: string, post: IPopulatedPost) {
+  if (io) {
+    io.to(postid).emit('update_post', post); // Notify all clients
+  }
+}
+
+export function emitDeletePost(postid: string) {
+  if (io) {
+    io.to(postid).emit('delete_post', postid);
   }
 }
 export default initSocket;

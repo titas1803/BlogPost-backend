@@ -71,7 +71,7 @@ export interface IComment extends Document {
   postId: ObjectId; // References the Posts collection
   authorId: ObjectId; // References the Users collection
   commentText: string;
-  likedBy: string[];
+  likedBy: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
   // virtual attribute

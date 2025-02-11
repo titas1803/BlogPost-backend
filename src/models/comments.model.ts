@@ -18,14 +18,23 @@ const commentSchema = new mongoose.Schema(
       requried: true,
     },
     likedBy: {
-      type: [String],
+      type: [mongoose.Schema.Types.ObjectId],
       default: [],
     },
   },
   {
     timestamps: true,
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true },
   }
 );
+
+commentSchema.virtual('authorDetails', {
+  ref: 'Users', // Reference to the Subscribers model
+  localField: 'authorId', // Match Post authorId
+  foreignField: '_id', // Find in users where authorId = user._id
+  justOne: true, // Ensure it returns a single document
+});
 
 commentSchema.virtual('likes').get(function () {
   return this.likedBy.length;

@@ -7,8 +7,10 @@ import { successJSON } from '../utilities/utility.js';
 import { rmSync } from 'fs';
 import {
   emitDeletePost,
+  emitDeletePostInProfile,
   emitNewPost,
   emitUpdatePost,
+  emitUpdatePostInProfile,
 } from '../utilities/socket.js';
 
 export const createNewPost = async (
@@ -105,7 +107,8 @@ export const updatePost = async (
       .lean();
     if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
 
-    emitUpdatePost(req.user.userId, updatedPost as IPopulatedPost);
+    emitUpdatePostInProfile(req.user.userId, updatedPost as IPopulatedPost);
+    emitUpdatePost(postId, updatedPost as IPopulatedPost);
     res.status(200).json(successJSON('Post updated successfully'));
   } catch (error) {
     next(error);
@@ -128,7 +131,10 @@ export const deleteAPost = async (
         'Post not found or you are not authorized to delete the post',
         404
       );
-    emitDeletePost(deletedPost.authorId.toString(), deletedPost.id);
+    if (req.user?.userId) {
+      emitDeletePostInProfile(req.user.userId, deletedPost.id);
+    }
+    emitDeletePost(deletedPost.id);
     res.status(200).json(successJSON(`'${deletedPost.title}' is deleted`));
   } catch (error) {
     next(error);
@@ -183,10 +189,11 @@ export const likeAPost = async (
         },
       ])
       .lean();
-    emitUpdatePost(
+    emitUpdatePostInProfile(
       likedPost.authorId.toString(),
       updatedPost as IPopulatedPost
     );
+    emitUpdatePost(likedPost.id.toString(), updatedPost as IPopulatedPost);
     res.status(200).json(successJSON('post liked successfuly'));
   } catch (error) {
     next(error);
@@ -214,11 +221,11 @@ export const unLikeApost = async (
         },
       ])
       .lean();
-
-    emitUpdatePost(
+    emitUpdatePostInProfile(
       unLikedPost.authorId.toString(),
       updatedPost as IPopulatedPost
     );
+    emitUpdatePost(unLikedPost.id.toString(), updatedPost as IPopulatedPost);
     res.status(200).json(successJSON('post unlikedliked successfuly'));
   } catch (error) {
     next(error);
