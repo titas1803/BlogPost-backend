@@ -261,7 +261,7 @@ export const getUserDetails = async (
       .lean();
     if (!userDetails) throw new ErrorHandler('User not found.', 404);
     const updatedUserDetails = {
-      id: userDetails._id,
+      _id: userDetails._id,
       name: userDetails.name,
       userName: userDetails.userName,
       email: userDetails.email,
