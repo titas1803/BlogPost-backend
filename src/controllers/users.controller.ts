@@ -5,6 +5,7 @@ import Users from '../models/users.model.js';
 import { rmSync, rm, promises as fsPromises } from 'fs';
 import { getUserById, successJSON } from '../utilities/utility.js';
 import { encryptPassword } from '../utilities/encryption.js';
+import Subscribers from '../models/subscribers.model.js';
 
 export const verifyUsername = async (
   req: Request,
@@ -340,6 +341,63 @@ export const deleteUserById = async (
     res
       .status(200)
       .json(successJSON(`User ${userDeleted.userName} deleted successfully`));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const topSubscribedUSers = async (
+  req: ICustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) throw new ErrorHandler('Please Log in', 403);
+    const { userId: loggedInuser, userName } = req.user;
+    console.log('userName', userName, 'userId', loggedInuser);
+    const topUsers = await Subscribers.aggregate([
+      // Step 1: Count total subscribers first (without removing excludeUserId)
+      {
+        $addFields: {
+          subscriberCount: { $size: '$subscribedBy' },
+        },
+      },
+      // Step 2: Sort based on subscriber count
+      { $sort: { subscriberCount: -1 } },
+      // Step 3: Limit to 6 users to compensate for filtering
+      { $limit: 6 },
+      // Step 4: Lookup user details
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'authorId',
+          foreignField: '_id',
+          as: 'userDetails',
+        },
+      },
+      { $unwind: '$userDetails' },
+      // Step 5: Keep only relevant fields
+      {
+        $project: {
+          _id: '$userDetails._id',
+          name: '$userDetails.name',
+          userName: '$userDetails.userName',
+          photo: '$userDetails.photo',
+          subscriberCount: 1,
+        },
+      },
+    ]);
+
+    if (!topUsers || topUsers.length === 0)
+      throw new ErrorHandler('Users not found', 404);
+    const finalList = topUsers
+      .filter((user) => user._id.toString() !== loggedInuser)
+      .slice(0, 5);
+    res.status(200).json(
+      successJSON('here are the top users', {
+        topUsers: finalList,
+      })
+    );
   } catch (error) {
     next(error);
   }

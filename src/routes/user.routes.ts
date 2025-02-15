@@ -11,6 +11,7 @@ import {
   removeProfilePhoto,
   getUserPhoto,
   getUserDetails,
+  topSubscribedUSers,
 } from '../controllers/users.controller.js';
 import { authenticateToken } from '../middlewares/userAuthentication.js';
 import { singleUpload } from '../middlewares/multer.js';
@@ -37,6 +38,7 @@ app.delete('/delete', deleteUser);
 app.get('/search', searchUser);
 app.get('/getuser', getUserDetails);
 app.get('/getuser/:userid', getUserDetails);
+app.get('/top-users', topSubscribedUSers);
 
 /**
  * Admin only routes

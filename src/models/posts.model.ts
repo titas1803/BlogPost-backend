@@ -38,8 +38,9 @@ const postSchema = new mongoose.Schema(
       default: [],
     },
     isPublished: {
-      type: Boolean,
-      default: true,
+      type: String,
+      enum: ['true', 'false'],
+      default: 'false',
     },
   },
   {

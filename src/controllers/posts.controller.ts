@@ -96,7 +96,9 @@ export const updatePost = async (
         isPublished: isPublished ?? post.isPublished,
         images: imagePath ?? post.images,
       },
-    })
+    });
+
+    const latestPost = await Posts.findByIdAndUpdate(postId)
       .populate([
         'commentsCount',
         {
@@ -106,9 +108,11 @@ export const updatePost = async (
       ])
       .lean();
     if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
+    if (!latestPost) throw new ErrorHandler('Error Occured', 500);
 
-    emitUpdatePostInProfile(req.user.userId, updatedPost as IPopulatedPost);
-    emitUpdatePost(postId, updatedPost as IPopulatedPost);
+    console.log('ispublished', updatedPost.isPublished, latestPost.isPublished);
+    emitUpdatePostInProfile(req.user.userId, latestPost as IPopulatedPost);
+    emitUpdatePost(postId, latestPost as IPopulatedPost);
     res.status(200).json(successJSON('Post updated successfully'));
   } catch (error) {
     next(error);
@@ -288,7 +292,10 @@ export const getAllPostsByUser = async (
 
     const authorOfPosts = authorid ?? userId;
 
-    const posts = await Posts.find({ authorId: authorOfPosts })
+    const posts = await Posts.find({
+      authorId: authorOfPosts,
+      ...(authorOfPosts !== userId && { isPublished: 'true' }),
+    })
       .sort({
         createdAt: -1,
       })

@@ -1,4 +1,4 @@
-import mongoose, { ObjectId } from 'mongoose';
+import { ObjectId } from 'mongoose';
 import { Request } from 'express';
 
 export interface IUser extends Document {
@@ -50,7 +50,7 @@ export interface IPost extends Document {
   categories: string[]; // Categorization for the blog
   coverImage: string; // URL to cover image
   likedBy: string[];
-  isPublished: boolean;
+  isPublished: string;
   createdAt: Date;
   updatedAt: Date;
   //virtual attribute

@@ -33,6 +33,6 @@ app
   .route('/:postid')
   .get(getAPost)
   .delete(sameUsersPostVerification, deleteAPost)
-  .patch(multiUpload, updatePost);
+  .patch(sameUsersPostVerification, multiUpload, updatePost);
 
 export default app;
