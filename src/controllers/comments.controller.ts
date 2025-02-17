@@ -145,7 +145,7 @@ export const getAllCommentsOfAPost = async (
       .populate([
         {
           path: 'authorDetails',
-          select: ['name', 'userName'],
+          select: ['name', 'userName', 'photo'],
         },
       ])
       .lean();

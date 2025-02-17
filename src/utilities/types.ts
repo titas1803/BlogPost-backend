@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongoose';
 import { Request } from 'express';
 
-export interface IUser extends Document {
+export interface IUserDetails extends Document {
   _id: ObjectId;
   name: string;
   userName: string;
@@ -11,17 +11,20 @@ export interface IUser extends Document {
   role: 'ADMIN' | 'USER';
   gender: 'male' | 'female';
   dob: Date;
-  password: string;
   bio: string;
   createdAt: Date;
   updatedAt: Date;
   // Virtual attribute
   noOfSubscribers?: {
-    _id: '67993d0a7b28b3ee2fff64ba';
-    authorId: '67993d0a7b28b3ee2fff64b6';
-    subscribedBy: [];
-    subscribedTo: [];
+    _id: string;
+    authorId: string;
+    subscribedBy: string[];
+    subscribedTo: string[];
   };
+}
+
+export interface IUser extends IUserDetails {
+  password: string;
 }
 
 export interface INewUserReq {

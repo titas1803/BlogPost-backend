@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
-import { IPopulatedPost, IPost } from './types.js';
+import { IPopulatedPost, IUserDetails } from './types.js';
 
 let io: Server;
 
@@ -41,6 +41,15 @@ const initSocket = (server: HttpServer) => {
 
   return io;
 };
+
+export function emitProfileDetailsUpdate(
+  userid: string,
+  userDetails: IUserDetails
+) {
+  if (io) {
+    io.to(userid).emit('update_details', userDetails);
+  }
+}
 
 export function emitNewPost(userid: string, post: IPopulatedPost) {
   if (io) {

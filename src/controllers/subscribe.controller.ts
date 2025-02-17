@@ -91,7 +91,7 @@ export const getSubscribeTo = async (
 ) => {
   try {
     const loggedinUser = req.user!.userId;
-    const profileId = req.params.authorid || loggedinUser;
+    const profileId = req.params.authorid ?? loggedinUser;
     const subscribersList = await Subscribers.findOne({ authorId: profileId });
     if (!subscribersList) throw new ErrorHandler('Details not found');
     const subscribedToAuthors = await Users.find({

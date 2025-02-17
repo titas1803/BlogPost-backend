@@ -13,6 +13,11 @@ import {
   emitUpdatePostInProfile,
 } from '../utilities/socket.js';
 
+const authorObject = {
+  path: 'authorDetails',
+  select: ['name', 'userName', 'photo'],
+};
+
 export const createNewPost = async (
   req: ICustomRequest,
   res: Response,
@@ -42,13 +47,7 @@ export const createNewPost = async (
     }).save();
 
     const populatedPost = await Posts.findById(newPost._id)
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
 
     if (populatedPost) {
@@ -99,13 +98,7 @@ export const updatePost = async (
     });
 
     const latestPost = await Posts.findByIdAndUpdate(postId)
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
     if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
     if (!latestPost) throw new ErrorHandler('Error Occured', 500);
@@ -153,13 +146,7 @@ export const getAPost = async (
   try {
     const postid = req.params.postid;
     const post = await Posts.findById(postid)
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
     if (!post) throw new ErrorHandler("post isn't available anymore", 404);
     res.status(200).json(
@@ -185,13 +172,7 @@ export const likeAPost = async (
     if (!likedPost) throw new ErrorHandler('post might not be available', 404);
 
     const updatedPost = await Posts.findById(likedPost.id)
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
     emitUpdatePostInProfile(
       likedPost.authorId.toString(),
@@ -217,13 +198,7 @@ export const unLikeApost = async (
     if (!unLikedPost)
       throw new ErrorHandler('post might not be available', 404);
     const updatedPost = await Posts.findById(unLikedPost.id)
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
     emitUpdatePostInProfile(
       unLikedPost.authorId.toString(),
@@ -259,13 +234,7 @@ export const searchPost = async (
       .sort({
         createdAt: -1,
       })
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
     if (!matchedPosts) throw new ErrorHandler();
     if (matchedPosts.length === 0)
@@ -299,13 +268,7 @@ export const getAllPostsByUser = async (
       .sort({
         createdAt: -1,
       })
-      .populate([
-        'commentsCount',
-        {
-          path: 'authorDetails',
-          select: ['name', 'userName'],
-        },
-      ])
+      .populate(['commentsCount', authorObject])
       .lean();
 
     if (!posts.length) throw new ErrorHandler('No Post found by the user', 404);

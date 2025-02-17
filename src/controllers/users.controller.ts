@@ -103,7 +103,9 @@ export const updateUser = async (
           dob: dob ? new Date(dob) : user.dob,
         },
       }
-    )
+    );
+
+    const latestuserDetails = await Users.findById(user.id)
       .populate([
         {
           path: 'noOfSubscribers',
@@ -111,11 +113,11 @@ export const updateUser = async (
         },
       ])
       .lean();
-    if (!updatedUser)
+    if (!latestuserDetails)
       throw new ErrorHandler('Errror occured during update', 500);
     res.status(200).json(
       successJSON('Data updated successfully', {
-        user: updatedUser,
+        user: latestuserDetails,
       })
     );
   } catch (error) {
