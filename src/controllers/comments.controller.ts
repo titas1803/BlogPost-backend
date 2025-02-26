@@ -47,13 +47,20 @@ export const updateComment = async (
         $set: {
           commentText,
         },
+      },
+      {
+        new: true,
       }
     );
     if (!updatedComment)
       throw new ErrorHandler(
         'Comment not found or you are not authorized to update the comment'
       );
-    res.status(200).json(successJSON('Comment updated'));
+    res.status(200).json(
+      successJSON('Comment updated', {
+        updatedCommentText: commentText,
+      })
+    );
   } catch (error) {
     next(error);
   }
@@ -100,13 +107,22 @@ export const likeAComment = async (
     const commentId = req.params.commentid;
     const userId = req.user?.userId;
     if (!userId) throw new ErrorHandler('Please login!', 401);
-    const comment = await Comments.findById(commentId);
+    const comment = await Comments.findByIdAndUpdate(
+      commentId,
+      {
+        $addToSet: { likedBy: userId },
+      },
+      {
+        new: true,
+      }
+    );
     if (!comment) throw new ErrorHandler('Comment not found');
-    const likedComment = await comment.updateOne({
-      $addToSet: { likedBy: userId },
-    });
-    if (!likedComment.acknowledged) throw new ErrorHandler();
-    res.status(200).json(successJSON('Comment liked'));
+    console.log(comment);
+    res.status(200).json(
+      successJSON('Comment liked', {
+        likeCount: comment.likedBy.length,
+      })
+    );
   } catch (error) {
     next(error);
   }
@@ -121,13 +137,21 @@ export const unLikeAComment = async (
     const commentId = req.params.commentid;
     const userId = req.user?.userId;
     if (!userId) throw new ErrorHandler('Please login!', 401);
-    const comment = await Comments.findById(commentId);
+    const comment = await Comments.findByIdAndUpdate(
+      commentId,
+      {
+        $pull: { likedBy: userId },
+      },
+      {
+        new: true,
+      }
+    );
     if (!comment) throw new ErrorHandler('Comment not found');
-    const unlikedComment = await comment.updateOne({
-      $pull: { likedBy: userId },
-    });
-    if (!unlikedComment.acknowledged) throw new ErrorHandler();
-    res.status(200).json(successJSON('Like removed from the comment'));
+    res.status(200).json(
+      successJSON('Like removed from the comment', {
+        likeCount: comment.likedBy.length,
+      })
+    );
   } catch (error) {
     next(error);
   }

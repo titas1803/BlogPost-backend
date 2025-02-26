@@ -89,10 +89,8 @@ export const updateUser = async (
     /**
      * Update the user details
      */
-    const updatedUser = await Users.findOneAndUpdate(
-      {
-        _id: user.id,
-      },
+    const updatedUser = await Users.findByIdAndUpdate(
+      user.id,
       {
         $set: {
           name: name ?? user.name,
@@ -102,10 +100,11 @@ export const updateUser = async (
           gender: gender ?? user.gender,
           dob: dob ? new Date(dob) : user.dob,
         },
+      },
+      {
+        new: true,
       }
-    );
-
-    const latestuserDetails = await Users.findById(user.id)
+    )
       .populate([
         {
           path: 'noOfSubscribers',
@@ -113,11 +112,12 @@ export const updateUser = async (
         },
       ])
       .lean();
-    if (!latestuserDetails)
+
+    if (!updatedUser)
       throw new ErrorHandler('Errror occured during update', 500);
     res.status(200).json(
       successJSON('Data updated successfully', {
-        user: latestuserDetails,
+        user: updatedUser,
       })
     );
   } catch (error) {
@@ -137,12 +137,15 @@ export const updateProfilePhoto = async (
     const { path: photo } = req.file;
     const user = await Users.findById(userId);
     if (!user) throw new ErrorHandler('user not found', 404);
-    const updatedUser = await Users.findOneAndUpdate(
-      { _id: user.id },
+    const updatedUser = await Users.findByIdAndUpdate(
+      user.id,
       {
         $set: {
           photo,
         },
+      },
+      {
+        new: true,
       }
     );
     if (!updatedUser)

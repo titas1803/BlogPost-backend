@@ -86,26 +86,29 @@ export const updatePost = async (
     if (req.files && Array.isArray(req.files))
       imagePath = req.files.map((image) => image.path);
 
-    const updatedPost = await Posts.findByIdAndUpdate(postId, {
-      $set: {
-        title: title ?? post.title,
-        content: content ?? post.content,
-        tags: tags ? tags.split(' ') : post.tags,
-        categories: categories ? categories.split(',') : post.categories,
-        isPublished: isPublished ?? post.isPublished,
-        images: imagePath ?? post.images,
+    const updatedPost = await Posts.findByIdAndUpdate(
+      postId,
+      {
+        $set: {
+          title: title ?? post.title,
+          content: content ?? post.content,
+          tags: tags ? tags.split(' ') : post.tags,
+          categories: categories ? categories.split(',') : post.categories,
+          isPublished: isPublished ?? post.isPublished,
+          images: imagePath ?? post.images,
+        },
       },
-    });
-
-    const latestPost = await Posts.findByIdAndUpdate(postId)
+      {
+        new: true,
+      }
+    )
       .populate(['commentsCount', authorObject])
       .lean();
-    if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
-    if (!latestPost) throw new ErrorHandler('Error Occured', 500);
 
-    console.log('ispublished', updatedPost.isPublished, latestPost.isPublished);
-    emitUpdatePostInProfile(req.user.userId, latestPost as IPopulatedPost);
-    emitUpdatePost(postId, latestPost as IPopulatedPost);
+    if (!updatedPost) throw new ErrorHandler('Error Occured', 500);
+
+    emitUpdatePostInProfile(req.user.userId, updatedPost as IPopulatedPost);
+    emitUpdatePost(postId, updatedPost as IPopulatedPost);
     res.status(200).json(successJSON('Post updated successfully'));
   } catch (error) {
     next(error);
@@ -166,19 +169,24 @@ export const likeAPost = async (
 ) => {
   try {
     const postid = req.params.postid;
-    const likedPost = await Posts.findByIdAndUpdate(postid, {
-      $addToSet: { likedBy: req.user?.userId },
-    });
-    if (!likedPost) throw new ErrorHandler('post might not be available', 404);
-
-    const updatedPost = await Posts.findById(likedPost.id)
+    const likedPost = await Posts.findByIdAndUpdate(
+      postid,
+      {
+        $addToSet: { likedBy: req.user?.userId },
+      },
+      {
+        new: true,
+      }
+    )
       .populate(['commentsCount', authorObject])
       .lean();
+    if (!likedPost) throw new ErrorHandler('post might not be available', 404);
+
     emitUpdatePostInProfile(
       likedPost.authorId.toString(),
-      updatedPost as IPopulatedPost
+      likedPost as IPopulatedPost
     );
-    emitUpdatePost(likedPost.id.toString(), updatedPost as IPopulatedPost);
+    emitUpdatePost(likedPost._id.toString(), likedPost as IPopulatedPost);
     res.status(200).json(successJSON('post liked successfuly'));
   } catch (error) {
     next(error);
@@ -192,19 +200,22 @@ export const unLikeApost = async (
 ) => {
   try {
     const postid = req.params.postid;
-    const unLikedPost = await Posts.findByIdAndUpdate(postid, {
-      $pull: { likedBy: req.user?.userId },
-    });
-    if (!unLikedPost)
-      throw new ErrorHandler('post might not be available', 404);
-    const updatedPost = await Posts.findById(unLikedPost.id)
+    const unLikedPost = await Posts.findByIdAndUpdate(
+      postid,
+      {
+        $pull: { likedBy: req.user?.userId },
+      },
+      { new: true }
+    )
       .populate(['commentsCount', authorObject])
       .lean();
+    if (!unLikedPost)
+      throw new ErrorHandler('post might not be available', 404);
     emitUpdatePostInProfile(
       unLikedPost.authorId.toString(),
-      updatedPost as IPopulatedPost
+      unLikedPost as IPopulatedPost
     );
-    emitUpdatePost(unLikedPost.id.toString(), updatedPost as IPopulatedPost);
+    emitUpdatePost(unLikedPost._id.toString(), unLikedPost as IPopulatedPost);
     res.status(200).json(successJSON('post unlikedliked successfuly'));
   } catch (error) {
     next(error);
