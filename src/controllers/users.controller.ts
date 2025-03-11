@@ -78,7 +78,7 @@ export const updateUser = async (
     userName = userName.toLowerCase();
 
     /**
-     * get userId and userName from req
+     * get userId from req
      */
     if (!req.user) throw new ErrorHandler('User information is missing', 400);
 
@@ -117,6 +117,59 @@ export const updateUser = async (
       throw new ErrorHandler('Errror occured during update', 500);
     res.status(200).json(
       successJSON('Data updated successfully', {
+        user: updatedUser,
+      })
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateBio = async (
+  req: ICustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    let { bio } = req.body;
+
+    if (bio === undefined) {
+      throw new ErrorHandler('Provide the profile bio in request body');
+    }
+    /**
+     * get userId from req
+     */
+    if (!req.user) throw new ErrorHandler('User information is missing', 400);
+
+    const { userId } = req.user;
+
+    const user = await getUserById(userId);
+
+    /**
+     * Update the user details
+     */
+    const updatedUser = await Users.findByIdAndUpdate(
+      user.id,
+      {
+        $set: {
+          bio: bio ?? user.bio,
+        },
+      },
+      {
+        new: true,
+      }
+    )
+      .populate([
+        {
+          path: 'noOfSubscribers',
+          select: ['subscribedBy', 'subscribedTo'],
+        },
+      ])
+      .lean();
+    if (!updatedUser)
+      throw new ErrorHandler('Errror occured during update', 500);
+    res.status(200).json(
+      successJSON('Bio updated successfully', {
         user: updatedUser,
       })
     );
@@ -269,14 +322,13 @@ export const getUserDetails = async (
       _id: userDetails._id,
       name: userDetails.name,
       userName: userDetails.userName,
+      bio: userDetails.bio,
       email: userDetails.email,
       photo: userDetails.photo,
       phone: userDetails.phone,
       gender: userDetails.gender,
       dob: userDetails.dob,
-      noOfSubscribers: userDetails.noOfSubscribers?.subscribedBy?.length ?? 0,
-      noOfSubscriberedTo:
-        userDetails.noOfSubscribers?.subscribedTo?.length ?? 0,
+      noOfSubscribers: userDetails.noOfSubscribers,
     };
     res.status(200).json(
       successJSON('User details found', {

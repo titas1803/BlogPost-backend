@@ -12,6 +12,7 @@ import {
   getUserPhoto,
   getUserDetails,
   topSubscribedUSers,
+  updateBio,
 } from '../controllers/users.controller.js';
 import { authenticateToken } from '../middlewares/userAuthentication.js';
 import { singleUpload } from '../middlewares/multer.js';
@@ -31,6 +32,7 @@ app.get('/username-available/:username', verifyUsername);
  */
 app.use(authenticateToken);
 app.patch('/update', updateUser);
+app.patch('/update/update-bio', updateBio);
 app.patch('/update/update-photo', singleUpload, updateProfilePhoto);
 app.patch('/update/remove-photo', removeProfilePhoto);
 app.get('/photo', getUserPhoto);
